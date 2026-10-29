@@ -19,7 +19,7 @@ The parent runs `validate-coverage-ledger.cjs` after creating the ledger and aft
 
 The verdicts are distinct: `confirmed` has a complete source trace and bounded observed result, `needs_validation` has an exact unresolved fact and no severity, and `rejected` records a disproved candidate.
 
-Multiple runs against the same repo are additive. The skill uses prior ledgers and findings to target gaps, revalidate changed source, and carry forward current-source evidence without treating stale or unresolved work as covered.
+Multiple runs against the same repo are additive. The skill uses prior ledgers and findings to target gaps, revalidate changed source, and carry forward current-source evidence without treating stale or unresolved work as covered.\n\nThis fork adds a zero-dependency SARIF exporter for publishing confirmed findings to code-scanning tools. It deliberately omits `needs_validation` and `rejected` records so unresolved or disproved candidates do not become alerts.
 
 ## Files
 
@@ -41,12 +41,12 @@ Multiple runs against the same repo are additive. The skill uses prior ledgers a
 | `DESKTOP-MOBILE-AND-LOCAL-IPC.md` | Native app, deep-link, webview, exported-component, helper, daemon, and local-IPC hunting classes |
 | `VALIDATION-AND-REPORTING.md` | Phases 3–6 candidate validation, structured output, record verification, and reporting |
 | `report-schema.json` | JSON schema for all three `findings.json` verdicts |
-| `validate-findings.cjs` | Zero-dependency validator for `findings.json` in Phases 4 and 5 |
+| `validate-findings.cjs` | Zero-dependency validator for `findings.json` in Phases 4 and 5 |\n| `export-sarif.cjs` | Converts confirmed findings to SARIF 2.1.0 for code-scanning integrations |
 | `validate-findings.test.cjs` | Findings-validator tests and producer-compatible fixture checks |
 | `validate-coverage-ledger.cjs` | Zero-dependency validator for `coverage-ledger.json` in Phases 1–5 |
 | `validate-coverage-ledger.test.cjs` | Coverage-ledger validator tests |
 
-## Installation
+## Export confirmed findings to SARIF\n\nValidate the records first, then export only independently confirmed findings. By default, the exporter writes SARIF to standard output; `--output` writes to a file.\n\n```bash\nnode skills/security-audit/validate-findings.cjs findings.json\nnode skills/security-audit/export-sarif.cjs findings.json --output findings.sarif.json\n```\n\n`needs_validation` and `rejected` records are omitted from SARIF. Each result keeps its stable fingerprint, severity, primary source location, trace and evidence locations, and remediation details.\n\n## Installation
 
 Install the skill with the [Skills CLI](https://skills.sh):
 
