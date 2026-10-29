@@ -21,6 +21,8 @@ The verdicts are distinct: `confirmed` has a complete source trace and bounded o
 
 Multiple runs against the same repo are additive. The skill uses prior ledgers and findings to target gaps, revalidate changed source, and carry forward current-source evidence without treating stale or unresolved work as covered.
 
+This fork adds a zero-dependency SARIF exporter for publishing confirmed findings to code-scanning tools. It deliberately omits `needs_validation` and `rejected` records so unresolved or disproved candidates do not become alerts.
+
 ## Files
 
 | File | Purpose |
@@ -42,9 +44,21 @@ Multiple runs against the same repo are additive. The skill uses prior ledgers a
 | `VALIDATION-AND-REPORTING.md` | Phases 3–6 candidate validation, structured output, record verification, and reporting |
 | `report-schema.json` | JSON schema for all three `findings.json` verdicts |
 | `validate-findings.cjs` | Zero-dependency validator for `findings.json` in Phases 4 and 5 |
+| `export-sarif.cjs` | Converts confirmed findings to SARIF 2.1.0 for code-scanning integrations |
 | `validate-findings.test.cjs` | Findings-validator tests and producer-compatible fixture checks |
 | `validate-coverage-ledger.cjs` | Zero-dependency validator for `coverage-ledger.json` in Phases 1–5 |
 | `validate-coverage-ledger.test.cjs` | Coverage-ledger validator tests |
+
+## Export confirmed findings to SARIF
+
+Validate the records first, then export only independently confirmed findings. By default, the exporter writes SARIF to standard output; `--output` writes to a file.
+
+```bash
+node skills/security-audit/validate-findings.cjs findings.json
+node skills/security-audit/export-sarif.cjs findings.json --output findings.sarif.json
+```
+
+`needs_validation` and `rejected` records are omitted from SARIF. Each result keeps its stable fingerprint, severity, primary source location, trace and evidence locations, and remediation details.
 
 ## Installation
 
